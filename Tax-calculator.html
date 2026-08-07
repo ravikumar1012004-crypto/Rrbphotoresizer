@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USA Freelance Tax & Net Income Calculator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .calculator-container {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 520px;
+        }
+        h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        button {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .results {
+            margin-top: 25px;
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .result-row.highlight {
+            font-weight: bold;
+            color: #d97706;
+        }
+        .result-row.total {
+            border-top: 2px solid #cbd5e1;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #16a34a;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calculator-container">
+    <h2>US Freelance Tax Calculator</h2>
+    <div class="subtitle">Estimate Self-Employment Tax, Quarterly Payments & Net Income</div>
+    
+    <div class="form-group">
+        <label for="grossIncome">Gross Annual Income ($)</label>
+        <input type="number" id="grossIncome" placeholder="e.g., 75000" value="60000">
+    </div>
+
+    <div class="form-group">
+        <label for="expenses">Business Expenses ($)</label>
+        <input type="number" id="expenses" placeholder="e.g., 5000" value="5000">
+    </div>
+
+    <div class="form-group">
+        <label for="stateTax">State Tax Rate (%)</label>
+        <select id="stateTax">
+            <option value="0">0% (e.g., Texas, Florida, Nevada)</option>
+            <option value="4">4% (Average State Tax)</option>
+            <option value="6" selected>6% (e.g., New York / Standard)</option>
+            <option value="9">9% (e.g., California)</option>
+        </select>
+    </div>
+
+    <button onclick="calculateTax()">Calculate Net Income</button>
+
+    <div class="results" id="resultsSection">
+        <div class="result-row">
+            <span>Net Business Income:</span>
+            <span id="netBusiness">$55,000.00</span>
+        </div>
+        <div class="result-row">
+            <span>Self-Employment Tax (~15.3%):</span>
+            <span id="seTax">$7,764.00</span>
+        </div>
+        <div class="result-row">
+            <span>Federal & State Income Tax:</span>
+            <span id="incomeTax">$6,200.00</span>
+        </div>
+        <div class="result-row highlight">
+            <span>Estimated Quarterly Tax (Per 3 Months):</span>
+            <span id="quarterlyTax">$3,491.00</span>
+        </div>
+        <div class="result-row">
+            <span>Effective Tax Rate:</span>
+            <span id="effectiveRate">25.39%</span>
+        </div>
+        <div class="result-row total">
+            <span>Take-Home Net Income:</span>
+            <span id="netTakeHome">$41,036.00</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculateTax() {
+    let gross = parseFloat(document.getElementById('grossIncome').value) || 0;
+    let expenses = parseFloat(document.getElementById('expenses').value) || 0;
+    let stateRate = parseFloat(document.getElementById('stateTax').value) / 100;
+
+    let netBusinessIncome = Math.max(0, gross - expenses);
+    let seTax = netBusinessIncome * 0.9235 * 0.153;
+
+    let deductibleSE = seTax / 2;
+    let taxableIncomeForIncomeTax = Math.max(0, netBusinessIncome - deductibleSE - 14600);
+    
+    let federalTax = taxableIncomeForIncomeTax * 0.12;
+    let stateTaxAmount = netBusinessIncome * stateRate;
+    let totalIncomeTax = federalTax + stateTaxAmount;
+
+    let totalTaxes = seTax + totalIncomeTax;
+    let netTakeHome = netBusinessIncome - totalTaxes;
+    let quarterlyTax = totalTaxes / 4;
+    
+    let effectiveRate = netBusinessIncome > 0 ? (totalTaxes / netBusinessIncome) * 100 : 0;
+
+    document.getElementById('netBusiness').innerText = '$' + netBusinessIncome.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('seTax').innerText = '$' + seTax.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('incomeTax').innerText = '$' + totalIncomeTax.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('quarterlyTax').innerText = '$' + quarterlyTax.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('effectiveRate').innerText = effectiveRate.toFixed(2) + '%';
+    document.getElementById('netTakeHome').innerText = '$' + netTakeHome.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+calculateTax();
+</script>
+
+</body>
+</html>
